@@ -4,7 +4,7 @@ import { redirect } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
 import { getUserId, requireUserId } from "~/utils/session.server";
-import type { User } from "../users";
+import type { User } from "~/models/user.server";
 
 export async function getLoaderData(token: string, userId: string) {
   const res = await fetch(`${process.env.OSEM_API_URL}/management/users/${userId}`, {
@@ -13,6 +13,7 @@ export async function getLoaderData(token: string, userId: string) {
     }
   });
   const user = await res.json()
+  console.log(user)
   return user
 }
 

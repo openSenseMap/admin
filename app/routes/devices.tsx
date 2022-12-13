@@ -17,7 +17,18 @@ export type Device = {
   integrations: any[];
   access_token: string;
   useAuth: boolean;
+}
 
+export async function getLoaderData(token: string) {
+  const res = await fetch(`${process.env.OSEM_API_URL}/management/boxes`, {
+    headers: {
+      "content-type": "application/json;charset=UTF-8",
+      "Authorization": `Bearer ${token}`
+    }
+  })
+  const devices = await res.json()
+
+  return devices
 }
 
 export async function loader({ request }: LoaderArgs) {
@@ -28,11 +39,8 @@ export async function loader({ request }: LoaderArgs) {
 
 export default function DevicesRoute() {
   return (
-    <div>
-      <h1 className="text-green-300">Device</h1>
-      <main>
-        <Outlet />
-      </main>
-    </div>
+    <main className="container mx-auto p-4">
+      <Outlet />
+    </main>
   );
 }
