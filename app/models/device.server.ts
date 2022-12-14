@@ -1,3 +1,5 @@
+import type { User } from "./user.server";
+
 export type Device = {
   name: string;
   exposure: string;
@@ -12,6 +14,7 @@ export type Device = {
   integrations: any[];
   access_token: string;
   useAuth: boolean;
+  owner: User
 };
 
 export function deleteDevice (deviceId: string) {
