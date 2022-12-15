@@ -3,7 +3,9 @@ import { json } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import { getUserId, requireUserId } from "~/utils/session.server";
+import { getLoaderData as loadUsers } from "../users";
 import type { Device } from "~/models/device.server";
+import type { User } from "~/models/user.server";
 
 export async function getLoaderData(token: string, deviceId: string) {
   const res = await fetch(`${process.env.OSEM_API_URL}/management/boxes/${deviceId}`, {
@@ -24,20 +26,30 @@ export const loader: LoaderFunction = async ({ params, request }: LoaderArgs) =>
 
   invariant(token, "Expected user token")
 
-  return json<Device>(await getLoaderData(token, params.deviceId))
+  return json<{
+    device: Device,
+    users: User[]
+  }>({
+    device: await getLoaderData(token, params.deviceId),
+    users: await loadUsers(token)
+  })
 }
 
-export const action: ActionFunction = async ({ params, request }) => {
-  const form = await request.formData();
+// export const action: ActionFunction = async ({ params, request }) => {
+//   // const form = await request.formData();
 
-  await requireUserId(request);
-  const token = await getUserId(request)
+//   // await requireUserId(request);
+//   // const token = await getUserId(request)
 
-  return null
-}
+//   return null
+// }
 
 export default function DeviceRoute() {
-  const device = useLoaderData<Device>()
+  const { device, users} = useLoaderData<{
+    device: Device,
+    users: User[]
+  }>()
+  console.log(users.length)
   return (
     <>
       <div className="mt-10 sm:mt-0">
@@ -70,13 +82,15 @@ export default function DeviceRoute() {
                       <label htmlFor="owner" className="block text-sm font-medium text-gray-700">
                         Owner
                       </label>
-                      <input
-                        type="text"
-                        name="owner"
-                        id="owner"
-                        defaultValue={`${device.owner.name} (${device.owner.email})`}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                      />
+                      <div className="col-span-6 sm:col-span-3">
+                        <select id="owner" name="owner" className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" defaultValue={device.owner.name}>
+                          {users.map(user => {
+                            return (
+                              <option key={user._id} value={user.name}>{user.name} ({user.email})</option>
+                            )
+                          })}
+                        </select>
+                      </div>
                     </div>
 
                     <div className="col-span-6">

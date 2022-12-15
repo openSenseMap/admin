@@ -1,6 +1,8 @@
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link } from "@remix-run/react";
+import MyCombobox from "~/shared/components/MyCombobox";
+import ToggleButton from "~/shared/components/Switch";
 import { requireUserId } from "~/utils/session.server";
 
 export async function loader({ request }: LoaderArgs) {
@@ -20,6 +22,8 @@ export default function IndexRoute() {
         <div className="border-2 p-4">
           <Link to="devices">Edit devices</Link>
         </div>
+        <MyCombobox></MyCombobox>
+        <ToggleButton></ToggleButton>
       </div>
     </div>
   )
