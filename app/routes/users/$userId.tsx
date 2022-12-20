@@ -156,13 +156,10 @@ export default function UserRoute() {
                       <label htmlFor="role" className="block text-sm font-medium text-gray-700">
                         Role
                       </label>
-                      <input
-                        type="text"
-                        name="role"
-                        id="role"
-                        defaultValue={user.role}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                      />
+                      <select id="role" name="role" className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" defaultValue={user.role}>
+                        <option value="admin">Admin</option>
+                        <option value="user">User</option>
+                      </select>
                     </div>
 
                     <div className="col-span-6 sm:col-span-3 lg:col-span-2">
@@ -271,10 +268,12 @@ export default function UserRoute() {
                 <div className="space-y-6 bg-white px-4 py-5 sm:p-6">
                   <table>
                      <thead className="border-2 border-black">
-                       <th className="border-r-2 border-black p-2">Name</th>
-                       <th className="border-r-2 border-black p-2">Exposure</th>
-                       <th className="border-r-2 border-black p-2">Model</th>
-                       <th className="border-r-2 border-black p-2"></th>
+                      <tr>
+                        <th className="border-r-2 border-black p-2">Name</th>
+                        <th className="border-r-2 border-black p-2">Exposure</th>
+                        <th className="border-r-2 border-black p-2">Model</th>
+                        <th className="border-r-2 border-black p-2"></th>
+                      </tr>
                      </thead>
                      <tbody className="border-2 border-black">
                        {user.boxes.map((device) => (

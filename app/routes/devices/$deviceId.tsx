@@ -1,4 +1,4 @@
-import type { ActionFunction, LoaderArgs, LoaderFunction } from "@remix-run/node";
+import type { LinksFunction, LoaderArgs, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
 import invariant from "tiny-invariant";
@@ -6,6 +6,21 @@ import { getUserId, requireUserId } from "~/utils/session.server";
 import { getLoaderData as loadUsers } from "../users";
 import type { Device } from "~/models/device.server";
 import type { User } from "~/models/user.server";
+import Map from "~/shared/components/Map";
+
+import maplibregl from "maplibre-gl/dist/maplibre-gl.css"
+import type { MarkerDragEvent } from "~/shared/components/Marker";
+import Marker from "~/shared/components/Marker";
+import { useCallback, useState } from "react";
+
+export const links: LinksFunction = () => {
+  return [
+    {
+      rel: 'stylesheet',
+      href: maplibregl
+    }
+  ]
+}
 
 export async function getLoaderData(token: string, deviceId: string) {
   const res = await fetch(`${process.env.OSEM_API_URL}/management/boxes/${deviceId}`, {
@@ -14,7 +29,7 @@ export async function getLoaderData(token: string, deviceId: string) {
     }
   });
   const device = await res.json()
-  console.log(device)
+  // console.log(device)
   return device
 }
 
@@ -49,7 +64,16 @@ export default function DeviceRoute() {
     device: Device,
     users: User[]
   }>()
-  console.log(users.length)
+  console.log(device)
+
+  const [deviceLocation, setDeviceLocation] = useState<number[]>(device.loc[0].geometry.coordinates)
+
+  const onMarkerDragEnd = useCallback((event: MarkerDragEvent) => {
+    device.loc[0].geometry.coordinates = [event.lngLat.lng, event.lngLat.lat]
+    const {lng, lat} = event.lngLat;
+    setDeviceLocation([lng, lat])
+  }, []);
+
   return (
     <>
       <div className="mt-10 sm:mt-0">
@@ -84,6 +108,7 @@ export default function DeviceRoute() {
                       </label>
                       <div className="col-span-6 sm:col-span-3">
                         <select id="owner" name="owner" className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" defaultValue={device.owner.name}>
+                          <option>kein Owner definiert</option>
                           {users.map(user => {
                             return (
                               <option key={user._id} value={user.name}>{user.name} ({user.email})</option>
@@ -159,7 +184,52 @@ export default function DeviceRoute() {
                     </div>
 
                     <div className="col-span-6 sm:col-span-3">
-                      Karte
+                      <Map longitude={deviceLocation[0]} latitude={deviceLocation[1]}>
+                        <Marker
+                          longitude={deviceLocation[0]}
+                          latitude={deviceLocation[1]}
+                          draggable={true}
+                          onDragEnd={onMarkerDragEnd}
+                        />
+                      </Map>
+                    </div>
+
+                    <div className="col-span-6">
+                      <label htmlFor="longitude" className="block text-sm font-medium text-gray-700">
+                        Longitude
+                      </label>
+                      <input
+                        type="number"
+                        name="longitude"
+                        id="longitude"
+                        value={deviceLocation[0]}
+                        onChange={(e) => {
+                          // update checkbox state w/o submitting the form
+                          const [lng, lat] = deviceLocation;
+                          setDeviceLocation([parseFloat(e.target.value), lat]);
+                        }}
+                        // defaultValue={device.loc[0].geometry.coordinates[0]}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      />
+                    </div>
+
+                    <div className="col-span-6">
+                      <label htmlFor="latitude" className="block text-sm font-medium text-gray-700">
+                        Latitude
+                      </label>
+                      <input
+                        type="number"
+                        name="lat"
+                        id="lat"
+                        value={deviceLocation[1]}
+                        onChange={(e) => {
+                          // update checkbox state w/o submitting the form
+                          const [lng, lat] = deviceLocation;
+                          setDeviceLocation([lng, parseFloat(e.target.value)]);
+                        }}
+                        // defaultValue={device.loc[0].geometry.coordinates[1]}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      />
                     </div>
 
                     {/* <div className="col-span-6 sm:col-span-4">
@@ -299,12 +369,12 @@ export default function DeviceRoute() {
             <div className="overflow-hidden shadow sm:rounded-md">
               <div className="space-y-6 bg-white px-4 py-5 sm:p-6">
                 <table>
-                    <thead className="border-2 border-black">
+                    {/* <thead className="border-2 border-black">
                       <th className="border-r-2 border-black p-2">Name</th>
                       <th className="border-r-2 border-black p-2">Exposure</th>
                       <th className="border-r-2 border-black p-2">Model</th>
                       <th className="border-r-2 border-black p-2"></th>
-                    </thead>
+                    </thead> */}
                     <tbody className="border-2 border-black">
                       {/* {user.boxes.map((device) => (
                         <tr key={device._id} className="border-2 border-black">
@@ -339,7 +409,7 @@ export default function DeviceRoute() {
             </div>
           </div>
           <div className="mt-5 md:col-span-2 md:mt-0">
-              <div className="overflow-hidden shadow sm:rounded-md">
+              {/* <div className="overflow-hidden shadow sm:rounded-md">
                 <div className="space-y-6 bg-white px-4 py-5 sm:p-6">
                   <table>
                      <thead className="border-2 border-black">
@@ -349,7 +419,7 @@ export default function DeviceRoute() {
                        <th className="border-r-2 border-black p-2"></th>
                      </thead>
                      <tbody className="border-2 border-black">
-                       {/* {user.boxes.map((device) => (
+                       {user.boxes.map((device) => (
                          <tr key={device._id} className="border-2 border-black">
                            <td className="border-r-2 border-black p-2">{device.name}</td>
                            <td className="border-r-2 border-black p-2">{device.exposure}</td>
@@ -358,11 +428,11 @@ export default function DeviceRoute() {
                             <Link to={`/devices/${device._id}`} className="cursor-pointer hover:underline hover:underline-offset-2">Open on new Page</Link>
                           </td>
                          </tr>
-                       ))} */}
+                       ))}
                      </tbody>
                    </table>
                 </div>
-              </div>
+              </div> */}
           </div>
         </div>
       </div>

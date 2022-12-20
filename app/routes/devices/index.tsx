@@ -1,10 +1,21 @@
-import type { LoaderArgs, LoaderFunction } from "@remix-run/node";
+import type { LinksFunction, LoaderArgs, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import { getUserId, requireUserId } from "~/utils/session.server";
 import type { Device} from "../devices";
 import { getLoaderData } from "../devices";
+
+import maplibregl from "maplibre-gl/dist/maplibre-gl.css"
+
+export const links: LinksFunction = () => {
+  return [
+    {
+      rel: 'stylesheet',
+      href: maplibregl
+    }
+  ]
+}
 
 export const loader: LoaderFunction = async ({ request }: LoaderArgs) => {
 
@@ -26,12 +37,14 @@ export default function DevicesIndexRoute() {
       <div className="flex justify-center">
         <table>
           <thead className="border-2 border-black">
-            <th className="border-r-2 border-black p-2">ID</th>
-            <th className="border-r-2 border-black p-2">Name</th>
-            <th className="border-r-2 border-black p-2">Exposure</th>
-            <th className="border-r-2 border-black p-2">model</th>
-            <th className="border-r-2 border-black p-2">updatedAt</th>
-            <th className="border-r-2 border-black p-2"></th>
+            <tr>
+              <th className="border-r-2 border-black p-2">ID</th>
+              <th className="border-r-2 border-black p-2">Name</th>
+              <th className="border-r-2 border-black p-2">Exposure</th>
+              <th className="border-r-2 border-black p-2">model</th>
+              <th className="border-r-2 border-black p-2">updatedAt</th>
+              <th className="border-r-2 border-black p-2"></th>
+            </tr>
           </thead>
           <tbody className="border-2 border-black">
             {devices.map((device) => (

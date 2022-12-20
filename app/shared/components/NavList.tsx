@@ -3,7 +3,6 @@ import { NavLink } from "@remix-run/react";
 export default function NavList() {
   // This styling will be applied to a <NavLink> when the
   // route that it links to is currently selected.
-  const activeClassName = "border-b-2 border-b-indigo-500";
   return (
     <nav className="h-full">
       <ul className="flex flex-row h-full">

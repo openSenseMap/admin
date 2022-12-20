@@ -26,13 +26,15 @@ export default function UsersIndexRoute() {
       <div className="flex justify-center">
         <table>
           <thead className="border-2 border-black">
-            <th className="border-r-2 border-black p-2">Name</th>
-            <th className="border-r-2 border-black p-2">E-Mail</th>
-            <th className="border-r-2 border-black p-2">Confirmed</th>
-            <th className="border-r-2 border-black p-2">createdAt</th>
-            <th className="border-r-2 border-black p-2">updatedAt</th>
-            <th className="border-r-2 border-black p-2"># Devices</th>
-            <th className="border-r-2 border-black p-2"></th>
+            <tr>
+              <th className="border-r-2 border-black p-2">Name</th>
+              <th className="border-r-2 border-black p-2">E-Mail</th>
+              <th className="border-r-2 border-black p-2">Confirmed</th>
+              <th className="border-r-2 border-black p-2">createdAt</th>
+              <th className="border-r-2 border-black p-2">updatedAt</th>
+              <th className="border-r-2 border-black p-2"># Devices</th>
+              <th className="border-r-2 border-black p-2"></th>
+            </tr>
           </thead>
           <tbody className="border-2 border-black">
             {users.map((user) => (

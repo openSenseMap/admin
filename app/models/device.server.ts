@@ -1,3 +1,5 @@
+import type { Feature, Point } from "geojson";
+import type { Sensor } from "./sensor.server";
 import type { User } from "./user.server";
 
 export type Device = {
@@ -6,11 +8,11 @@ export type Device = {
   model: string;
   grouptag: string[];
   updatedAt: Date;
-  currentLocaltion: any[];
-  sensors: any[];
+  currentLocation: any[];
+  sensors: Sensor[];
   lastMeasurementAt: Date;
   _id: string;
-  loc: any[];
+  loc: Feature<Point>[];
   integrations: any[];
   access_token: string;
   useAuth: boolean;

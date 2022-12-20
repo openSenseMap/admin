@@ -1,4 +1,4 @@
-import { Links, LiveReload, Outlet, useLoaderData } from "@remix-run/react";
+import { Links, LiveReload, Outlet, Scripts, ScrollRestoration, useLoaderData } from "@remix-run/react";
 import type { LinksFunction, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node"; // or cloudflare/deno
 
@@ -55,6 +55,8 @@ export default function App() {
           </div>
         </header>
         <Outlet />
+        <ScrollRestoration />
+        <Scripts />
         <LiveReload />
       </body>
     </html>

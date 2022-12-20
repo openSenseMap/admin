@@ -1,7 +1,9 @@
-import type { LoaderArgs } from "@remix-run/node";
+import type { LinksFunction, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Outlet } from "@remix-run/react";
+import { Outlet, ScrollRestoration } from "@remix-run/react";
 import { requireUserId } from "~/utils/session.server";
+
+import maplibregl from "maplibre-gl/dist/maplibre-gl.css"
 
 export type Device = {
   name: string;
@@ -17,6 +19,15 @@ export type Device = {
   integrations: any[];
   access_token: string;
   useAuth: boolean;
+}
+
+export const links: LinksFunction = () => {
+  return [
+    {
+      rel: 'stylesheet',
+      href: maplibregl
+    }
+  ]
 }
 
 export async function getLoaderData(token: string) {
@@ -41,6 +52,7 @@ export default function DevicesRoute() {
   return (
     <main className="container mx-auto p-4">
       <Outlet />
+      <ScrollRestoration />
     </main>
   );
 }

@@ -8,6 +8,25 @@ type LoginForm = {
   password: string;
 };
 
+const validateJWT = function validateJWT (jwt: string) {
+  if (!jwt) {
+    return;
+  }
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [header, payload, signature] = jwt.split(".");
+
+    const jsonPayload = JSON.parse(Buffer.from(payload, 'base64').toString());
+    return (
+      jsonPayload.role === "admin" &&
+      new Date(jsonPayload.exp * 1000) > new Date()
+    );
+  } catch (error) {
+    return false;
+  }
+}
+
 export async function login({ username, password }: LoginForm) {
   const response = await fetch(
     `${process.env.OSEM_API_URL}/users/sign-in`,
@@ -27,6 +46,10 @@ export async function login({ username, password }: LoginForm) {
 
   if (!user) {
     return null;
+  }
+
+  if (validateJWT(user.token) !== true) {
+    throw new Error("Sign in succeeded but authorization is insufficient.");
   }
 
   return user;
