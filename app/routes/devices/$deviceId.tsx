@@ -1,4 +1,5 @@
-import type { LinksFunction, LoaderArgs, LoaderFunction } from "@remix-run/node";
+import type { ActionFunction, LinksFunction, LoaderArgs, LoaderFunction} from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
 import invariant from "tiny-invariant";
@@ -50,23 +51,46 @@ export const loader: LoaderFunction = async ({ params, request }: LoaderArgs) =>
   })
 }
 
-// export const action: ActionFunction = async ({ params, request }) => {
-//   // const form = await request.formData();
+export const action: ActionFunction = async ({ params, request }) => {
+  const form = await request.formData();
 
-//   // await requireUserId(request);
-//   // const token = await getUserId(request)
+  await requireUserId(request);
+  const token = await getUserId(request)
 
-//   return null
-// }
+  switch (form.get("action")) {
+    case "update":
+      console.log(process.env.OSEM_API_URL, params.deviceId)
+      const res = await fetch(`${process.env.OSEM_API_URL}/management/boxes/${params.deviceId}`, {
+        method: 'PUT',
+        headers: {
+          "content-type": "application/json;charset=UTF-8",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          owner: form.get("owner"),
+          name: form.get("name"),
+          description: form.get("description"),
+          exposure: form.get("exposure"),
+          access_token: form.get("access_token")
+        })
+      })
+      const answer = await res.json()
+      console.log(answer)
+      return redirect(`/devices/${params.deviceId}`)
+    default:
+      throw new Error("Unknow action")
+  }
+}
 
 export default function DeviceRoute() {
   const { device, users} = useLoaderData<{
     device: Device,
     users: User[]
   }>()
-  // console.log(device)
+  console.log(device)
 
   const [deviceLocation, setDeviceLocation] = useState<number[]>(device.loc[0].geometry.coordinates)
+  const [deviceOwner, setDeviceOwner] = useState<string>(device.owner._id)
 
   const onMarkerDragEnd = useCallback((event: MarkerDragEvent) => {
     device.loc[0].geometry.coordinates = [event.lngLat.lng, event.lngLat.lat]
@@ -107,11 +131,13 @@ export default function DeviceRoute() {
                         Owner
                       </label>
                       <div className="col-span-6 sm:col-span-3">
-                        <select id="owner" name="owner" className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" defaultValue={device.owner.name}>
+                        <select value={deviceOwner} onChange={(e) => {
+                          setDeviceOwner(e.target.value)
+                        }} id="owner" name="owner" className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm">
                           <option>kein Owner definiert</option>
                           {users.map(user => {
                             return (
-                              <option key={user._id} value={user.name}>{user.name} ({user.email})</option>
+                              <option key={user._id} value={user._id}>{user.name} ({user.email})</option>
                             )
                           })}
                         </select>
@@ -127,6 +153,32 @@ export default function DeviceRoute() {
                         name="grouptag"
                         id="grouptag"
                         defaultValue={device.grouptag}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      />
+                    </div>
+
+                    <div className="col-span-6">
+                      <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                        Description
+                      </label>
+                      <input
+                        type="text"
+                        name="description"
+                        id="description"
+                        defaultValue={device.description}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      />
+                    </div>
+
+                    <div className="col-span-6">
+                      <label htmlFor="access_token" className="block text-sm font-medium text-gray-700">
+                        Access token
+                      </label>
+                      <input
+                        type="text"
+                        name="access_token"
+                        id="access_token"
+                        defaultValue={device.access_token}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                       />
                     </div>

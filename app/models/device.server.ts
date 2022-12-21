@@ -7,6 +7,7 @@ export type Device = {
   exposure: string;
   model: string;
   grouptag: string[];
+  description: string;
   updatedAt: Date;
   currentLocation: any[];
   sensors: Sensor[];
