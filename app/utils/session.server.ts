@@ -42,7 +42,6 @@ export async function login({ username, password }: LoginForm) {
     }
   );
   const user = await response.json();
-  console.log(user);
 
   if (!user) {
     return null;

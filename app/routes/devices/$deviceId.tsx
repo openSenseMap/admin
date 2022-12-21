@@ -29,7 +29,7 @@ export async function getLoaderData(token: string, deviceId: string) {
     }
   });
   const device = await res.json()
-  // console.log(device)
+
   return device
 }
 
@@ -64,7 +64,7 @@ export default function DeviceRoute() {
     device: Device,
     users: User[]
   }>()
-  console.log(device)
+  // console.log(device)
 
   const [deviceLocation, setDeviceLocation] = useState<number[]>(device.loc[0].geometry.coordinates)
 

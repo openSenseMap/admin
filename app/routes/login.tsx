@@ -23,7 +23,6 @@ function validatePassword(password: unknown) {
 }
 
 function validateUrl(url: any) {
-  console.log(url);
   let urls = ["/devices", "/"];
   if (urls.includes(url)) {
     return url;
@@ -84,7 +83,6 @@ export const action: ActionFunction = async ({
       // if there is a user, create their session and redirect to /jokes
 
       const user = await login({ username, password})
-      console.log({user})
       if (!user) {
         return badRequest({
           fields,

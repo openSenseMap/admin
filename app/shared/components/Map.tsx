@@ -5,6 +5,7 @@ import maplibregl from 'maplibre-gl';
 interface MapProps {
   latitude?: number;
   longitude?: number;
+  key?: string
   children?: React.ReactNode
 }
 
@@ -16,7 +17,7 @@ export const MapContext = React.createContext<MapContextValue>({
   map: null
 });
 
-export default function MyMap ({latitude = 7, longitude = 52, children}: MapProps) {
+export default function MyMap ({latitude = 7, longitude = 52, key, children}: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const [mapInstance, setMapInstance] = useState<Map | null>(null);
 
@@ -36,7 +37,7 @@ export default function MyMap ({latitude = 7, longitude = 52, children}: MapProp
     if (mapContainer.current) {
       map = new maplibregl.Map({
         container: mapContainer.current,
-        style: `https://api.maptiler.com/maps/streets/style.json?key=s6ZwTwU4u8uKGSjMhzHX`,
+        style: `https://api.maptiler.com/maps/streets/style.json?key=${ENV.MAPTILER_KEY}`,
         center: [initialState.lng, initialState.lat],
         zoom: initialState.zoom
       });

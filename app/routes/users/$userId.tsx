@@ -13,7 +13,7 @@ export async function getLoaderData(token: string, userId: string) {
     }
   });
   const user = await res.json()
-  console.log(user)
+
   return user
 }
 
