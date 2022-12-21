@@ -19,7 +19,7 @@ export default function NavList() {
           className={({ isActive}) => isActive ? 'border-b-2 border-b-indigo-500' : 'hover:border-b-2 hover:border-b-gray-200 hover:bg-gray-100'}
         >
           <div className="p-4">
-            Boxes
+            Devices
           </div>
         </NavLink>
       </ul>
