@@ -5,6 +5,7 @@ import { Form, useLoaderData } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import { getUserId, requireUserId } from "~/utils/session.server";
 import { getLoaderData as loadUsers } from "../users";
+import { deleteDevice} from "~/models/device.server";
 import type { Device } from "~/models/device.server";
 import type { User } from "~/models/user.server";
 import Map from "~/shared/components/Map";
@@ -53,11 +54,17 @@ export const loader: LoaderFunction = async ({ params, request }: LoaderArgs) =>
 
 export const action: ActionFunction = async ({ params, request }) => {
   const form = await request.formData();
+  const { _action, ...values } = Object.fromEntries(form);
+  console.log(form.get("grouptag"))
+
+  invariant(params.deviceId, "deviceId should be set")
 
   await requireUserId(request);
   const token = await getUserId(request)
 
-  switch (form.get("action")) {
+  invariant(token, "Expected user token")
+
+  switch (_action) {
     case "update":
       console.log(process.env.OSEM_API_URL, params.deviceId)
       const res = await fetch(`${process.env.OSEM_API_URL}/management/boxes/${params.deviceId}`, {
@@ -66,17 +73,14 @@ export const action: ActionFunction = async ({ params, request }) => {
           "content-type": "application/json;charset=UTF-8",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({
-          owner: form.get("owner"),
-          name: form.get("name"),
-          description: form.get("description"),
-          exposure: form.get("exposure"),
-          access_token: form.get("access_token")
-        })
+        body: JSON.stringify(values)
       })
       const answer = await res.json()
       console.log(answer)
       return redirect(`/devices/${params.deviceId}`)
+    case "delete":
+      console.log("delete device");
+      deleteDevice(params.deviceId, token)
     default:
       throw new Error("Unknow action")
   }
@@ -87,7 +91,7 @@ export default function DeviceRoute() {
     device: Device,
     users: User[]
   }>()
-  console.log(device)
+  // console.log(device)
 
   const [deviceLocation, setDeviceLocation] = useState<number[]>(device.loc[0].geometry.coordinates)
   const [deviceOwner, setDeviceOwner] = useState<string>(device.owner._id)
@@ -144,7 +148,7 @@ export default function DeviceRoute() {
                       </div>
                     </div>
 
-                    <div className="col-span-6">
+                    {/* <div className="col-span-6">
                       <label htmlFor="grouptag" className="block text-sm font-medium text-gray-700">
                         Grouptags
                       </label>
@@ -155,7 +159,7 @@ export default function DeviceRoute() {
                         defaultValue={device.grouptag}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                       />
-                    </div>
+                    </div> */}
 
                     <div className="col-span-6">
                       <label htmlFor="description" className="block text-sm font-medium text-gray-700">
@@ -284,6 +288,48 @@ export default function DeviceRoute() {
                       />
                     </div>
 
+                    <div className="col-span-6 sm:col-span-3 lg:col-span-2">
+                      <label htmlFor="device-id" className="block text-sm font-medium text-gray-700">
+                        Device ID
+                      </label>
+                      <input
+                        type="text"
+                        name="device-id"
+                        id="device-id"
+                        defaultValue={device._id}
+                        disabled
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      />
+                    </div>
+
+                    <div className="col-span-6 sm:col-span-6 lg:col-span-2">
+                      <label htmlFor="created-at" className="block text-sm font-medium text-gray-700">
+                        Created at
+                      </label>
+                      <input
+                        type="text"
+                        name="created-at"
+                        id="created-at"
+                        defaultValue={device.createdAt}
+                        disabled
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      />
+                    </div>
+
+                    <div className="col-span-6 sm:col-span-3 lg:col-span-2">
+                      <label htmlFor="updated-at" className="block text-sm font-medium text-gray-700">
+                        Updated at
+                      </label>
+                      <input
+                        type="text"
+                        name="updated-at"
+                        id="updated-at"
+                        defaultValue={device.updatedAt}
+                        disabled
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      />
+                    </div>
+
                     {/* <div className="col-span-6 sm:col-span-4">
                       <div className="mt-4 space-y-4">
                         <div className="flex items-start">
@@ -379,7 +425,7 @@ export default function DeviceRoute() {
                   <div className="flex gap-2">
                     <button
                       type="submit"
-                      name="action"
+                      name="_action"
                       value="delete"
                       className="inline-flex justify-center rounded-md border border-transparent bg-red-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
@@ -389,7 +435,7 @@ export default function DeviceRoute() {
                   <div>
                     <button
                       type="submit"
-                      name="action"
+                      name="_action"
                       value="update"
                       className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >

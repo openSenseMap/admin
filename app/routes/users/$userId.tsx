@@ -1,10 +1,12 @@
 import invariant from "tiny-invariant";
 import type { ActionFunction, LoaderArgs, LoaderFunction} from "@remix-run/node";
-import { redirect } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, Link, useLoaderData } from "@remix-run/react";
 import { getUserId, requireUserId } from "~/utils/session.server";
 import type { User } from "~/models/user.server";
+import { execAction } from "~/models/user.server";
+import { updateUser } from "~/models/user.server";
+import Toggle from "~/shared/components/Toggle";
 
 export async function getLoaderData(token: string, userId: string) {
   const res = await fetch(`${process.env.OSEM_API_URL}/management/users/${userId}`, {
@@ -30,44 +32,23 @@ export const loader: LoaderFunction = async ({ params, request }: LoaderArgs) =>
 
 export const action: ActionFunction = async ({ params, request }) => {
   const form = await request.formData();
+  const { _action, ...values } = Object.fromEntries(form);
+
+  invariant(params.userId, "userId should be set")
 
   await requireUserId(request);
   const token = await getUserId(request)
 
-  switch (form.get("action")) {
+  invariant(token, "token not valid");
+
+  switch (_action) {
     case "update": {
-        const res = await fetch(`${process.env.OSEM_API_URL}/management/users/${params.userId}`, {
-          method: 'PUT',
-          headers: {
-            "content-type": "application/json;charset=UTF-8",
-            "Authorization": `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            name: form.get("name"),
-            role: form.get("role")
-          })
-        })
-        const answer = await res.json()
-        console.log(answer)
-        return redirect(`/users/${params.userId}`)
+        return await updateUser(params.userId, values, token)
       }
     case "resendEmailConfirmation":
     case "resendWelcomeMail":
     case "passwordReset": {
-        const res = await fetch(`${process.env.OSEM_API_URL}/management/users/${params.userId}/exec`, {
-          method: 'POST',
-          headers: {
-            "content-type": "application/json;charset=UTF-8",
-            "Authorization": `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            userId: params.userId,
-            action: form.get("action")
-          })
-        })
-        const answer = await res.json()
-        console.log(answer)
-        return redirect(`/users/${params.userId}`)
+        return await execAction(params.userId, _action, token)
       }
     default:
       throw new Error("Unknow action")
@@ -209,7 +190,7 @@ export default function UserRoute() {
                   <div className="flex gap-2">
                     <button
                       type="submit"
-                      name="action"
+                      name="_action"
                       value="passwordReset"
                       className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
@@ -217,7 +198,7 @@ export default function UserRoute() {
                     </button>
                     <button
                       type="submit"
-                      name="action"
+                      name="_action"
                       value="resendWelcomeMail"
                       className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
@@ -225,7 +206,7 @@ export default function UserRoute() {
                     </button>
                     <button
                       type="submit"
-                      name="action"
+                      name="_action"
                       value="resendEmailConfirmation"
                       className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
@@ -235,7 +216,7 @@ export default function UserRoute() {
                   <div>
                     <button
                       type="submit"
-                      name="action"
+                      name="_action"
                       value="update"
                       className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
