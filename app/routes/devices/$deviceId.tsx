@@ -55,7 +55,7 @@ export const loader: LoaderFunction = async ({ params, request }: LoaderArgs) =>
 export const action: ActionFunction = async ({ params, request }) => {
   const form = await request.formData();
   const { _action, ...values } = Object.fromEntries(form);
-  console.log(form.get("grouptag"))
+  console.log("Values & action: ", _action, values);
 
   invariant(params.deviceId, "deviceId should be set")
 
@@ -66,14 +66,24 @@ export const action: ActionFunction = async ({ params, request }) => {
 
   switch (_action) {
     case "update":
-      console.log(process.env.OSEM_API_URL, params.deviceId)
+
+      const { newOwner, ...rest} = values
+      // Check if we have a new owner
+      // We can´t just send the original owner because the openSenseMap API always tries
+      // to transfer the device and throws an error if the posted owner equals the actual owner.
+      if (newOwner) {
+        Object.assign(rest, {owner: newOwner})
+      }
+
       const res = await fetch(`${process.env.OSEM_API_URL}/management/boxes/${params.deviceId}`, {
         method: 'PUT',
         headers: {
           "content-type": "application/json;charset=UTF-8",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify(values)
+        body: JSON.stringify({
+          ...rest,
+        })
       })
       const answer = await res.json()
       console.log(answer)
@@ -137,7 +147,7 @@ export default function DeviceRoute() {
                       <div className="col-span-6 sm:col-span-3">
                         <select value={deviceOwner} onChange={(e) => {
                           setDeviceOwner(e.target.value)
-                        }} id="owner" name="owner" className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm">
+                        }} id="owner" className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm">
                           <option>kein Owner definiert</option>
                           {users.map(user => {
                             return (
@@ -145,6 +155,7 @@ export default function DeviceRoute() {
                             )
                           })}
                         </select>
+                        <input type="hidden" name="newOwner" value={deviceOwner !== device.owner._id ? deviceOwner : ''} readOnly />
                       </div>
                     </div>
 
