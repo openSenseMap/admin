@@ -67,7 +67,7 @@ export const action: ActionFunction = async ({ params, request }) => {
   switch (_action) {
     case "update":
 
-      const { newOwner, grouptag, ...rest} = values
+      const { newOwner, grouptag, latitude, longitude, ...rest} = values
       // Check if we have a new owner
       // We can´t just send the original owner because the openSenseMap API always tries
       // to transfer the device and throws an error if the posted owner equals the actual owner.
@@ -83,7 +83,8 @@ export const action: ActionFunction = async ({ params, request }) => {
         },
         body: JSON.stringify({
           ...rest,
-          grouptag: grouptag !== '' ? (grouptag as string).split(',') : []
+          grouptag: grouptag !== '' ? (grouptag as string).split(',') : [],
+          location: [longitude, latitude]
         })
       })
       const answer = await res.json()
@@ -285,8 +286,8 @@ export default function DeviceRoute() {
                       </label>
                       <input
                         type="number"
-                        name="lat"
-                        id="lat"
+                        name="latitude"
+                        id="latitude"
                         value={deviceLocation[1]}
                         onChange={(e) => {
                           // update checkbox state w/o submitting the form
