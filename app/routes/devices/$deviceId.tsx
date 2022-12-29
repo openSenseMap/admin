@@ -67,7 +67,7 @@ export const action: ActionFunction = async ({ params, request }) => {
   switch (_action) {
     case "update":
 
-      const { newOwner, ...rest} = values
+      const { newOwner, grouptag, ...rest} = values
       // Check if we have a new owner
       // We can´t just send the original owner because the openSenseMap API always tries
       // to transfer the device and throws an error if the posted owner equals the actual owner.
@@ -83,14 +83,15 @@ export const action: ActionFunction = async ({ params, request }) => {
         },
         body: JSON.stringify({
           ...rest,
+          grouptag: grouptag !== '' ? (grouptag as string).split(',') : []
         })
       })
       const answer = await res.json()
       console.log(answer)
       return redirect(`/devices/${params.deviceId}`)
     case "delete":
-      console.log("delete device");
       deleteDevice(params.deviceId, token)
+      return redirect('/devices')
     default:
       throw new Error("Unknow action")
   }
@@ -101,7 +102,6 @@ export default function DeviceRoute() {
     device: Device,
     users: User[]
   }>()
-  // console.log(device)
 
   const [deviceLocation, setDeviceLocation] = useState<number[]>(device.loc[0].geometry.coordinates)
   const [deviceOwner, setDeviceOwner] = useState<string>(device.owner._id)
@@ -159,7 +159,7 @@ export default function DeviceRoute() {
                       </div>
                     </div>
 
-                    {/* <div className="col-span-6">
+                    <div className="col-span-6">
                       <label htmlFor="grouptag" className="block text-sm font-medium text-gray-700">
                         Grouptags
                       </label>
@@ -170,7 +170,7 @@ export default function DeviceRoute() {
                         defaultValue={device.grouptag}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                       />
-                    </div> */}
+                    </div>
 
                     <div className="col-span-6">
                       <label htmlFor="description" className="block text-sm font-medium text-gray-700">
@@ -275,7 +275,6 @@ export default function DeviceRoute() {
                           const [lng, lat] = deviceLocation;
                           setDeviceLocation([parseFloat(e.target.value), lat]);
                         }}
-                        // defaultValue={device.loc[0].geometry.coordinates[0]}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                       />
                     </div>
@@ -294,7 +293,6 @@ export default function DeviceRoute() {
                           const [lng, lat] = deviceLocation;
                           setDeviceLocation([lng, parseFloat(e.target.value)]);
                         }}
-                        // defaultValue={device.loc[0].geometry.coordinates[1]}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                       />
                     </div>
@@ -340,96 +338,6 @@ export default function DeviceRoute() {
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                       />
                     </div>
-
-                    {/* <div className="col-span-6 sm:col-span-4">
-                      <div className="mt-4 space-y-4">
-                        <div className="flex items-start">
-                          <div className="flex h-5 items-center">
-                            <input
-                              id="email-confirmed"
-                              name="email-confirmed"
-                              type="checkbox"
-                              defaultChecked={user.emailIsConfirmed}
-                              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                            />
-                          </div>
-                          <div className="ml-3 text-sm">
-                            <label htmlFor="email-confirmed" className="font-medium text-gray-700">
-                              E-Mail confirmed
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                    </div> */}
-
-                    {/* <div className="col-span-6 sm:col-span-3">
-                      <label htmlFor="language" className="block text-sm font-medium text-gray-700">
-                        Language
-                      </label>
-                      <input
-                        type="text"
-                        id="language"
-                        name="language"
-                        defaultValue={user.language}
-                        className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                      >
-                      </input>
-                    </div> */}
-
-                    {/* <div className="col-span-6">
-                      <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-                        Role
-                      </label>
-                      <input
-                        type="text"
-                        name="role"
-                        id="role"
-                        defaultValue={user.role}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                      />
-                    </div> */}
-
-                    {/* <div className="col-span-6 sm:col-span-3 lg:col-span-2">
-                      <label htmlFor="user-id" className="block text-sm font-medium text-gray-700">
-                        User ID
-                      </label>
-                      <input
-                        type="text"
-                        name="user-id"
-                        id="user-id"
-                        defaultValue={user._id}
-                        disabled
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                      />
-                    </div> */}
-
-                    {/* <div className="col-span-6 sm:col-span-6 lg:col-span-2">
-                      <label htmlFor="created-at" className="block text-sm font-medium text-gray-700">
-                        Created at
-                      </label>
-                      <input
-                        type="text"
-                        name="created-at"
-                        id="created-at"
-                        defaultValue={user.createdAt}
-                        disabled
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                      />
-                    </div> */}
-
-                    {/* <div className="col-span-6 sm:col-span-3 lg:col-span-2">
-                      <label htmlFor="updated-at" className="block text-sm font-medium text-gray-700">
-                        Updated at
-                      </label>
-                      <input
-                        type="text"
-                        name="updated-at"
-                        id="updated-at"
-                        defaultValue={user.updatedAt}
-                        disabled
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                      />
-                    </div> */}
                   </div>
                 </div>
                 <div className="flex justify-between bg-gray-50 px-4 py-3 text-right sm:px-6">
@@ -477,24 +385,36 @@ export default function DeviceRoute() {
           <div className="mt-5 md:col-span-2 md:mt-0">
             <div className="overflow-hidden shadow sm:rounded-md">
               <div className="space-y-6 bg-white px-4 py-5 sm:p-6">
+                <Form method="post">
+                  <div className="grid grid-cols-6 gap-6">
+                    <div className="col-span-6 sm:col-span-3">
+                      <label htmlFor="owner" className="block text-sm font-medium text-gray-700">
+                        Device type
+                      </label>
+                      <div className="col-span-6 sm:col-span-3">
+                        <input type="text" name="model" defaultValue={device.model} readOnly className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                      </div>
+                    </div>
+                  </div>
+                </Form>
                 <table>
-                    {/* <thead className="border-2 border-black">
-                      <th className="border-r-2 border-black p-2">Name</th>
-                      <th className="border-r-2 border-black p-2">Exposure</th>
-                      <th className="border-r-2 border-black p-2">Model</th>
-                      <th className="border-r-2 border-black p-2"></th>
-                    </thead> */}
+                    <thead className="border-2 border-black">
+                      <tr>
+                        <th className="border-r-2 border-black p-2">ID</th>
+                        <th className="border-r-2 border-black p-2">Phenomenon</th>
+                        <th className="border-r-2 border-black p-2">Unit</th>
+                        <th className="border-r-2 border-black p-2">Type</th>
+                      </tr>
+                    </thead>
                     <tbody className="border-2 border-black">
-                      {/* {user.boxes.map((device) => (
-                        <tr key={device._id} className="border-2 border-black">
-                          <td className="border-r-2 border-black p-2">{device.name}</td>
-                          <td className="border-r-2 border-black p-2">{device.exposure}</td>
-                          <td className="border-r-2 border-black p-2">{device.model}</td>
-                          <td className="border-r-2 border-black p-2">
-                          <Link to={`/devices/${device._id}`} className="cursor-pointer hover:underline hover:underline-offset-2">Open on new Page</Link>
-                        </td>
+                      {device.sensors.map((sensor) => (
+                        <tr key={sensor._id} className="border-2 border-black">
+                          <td className="border-r-2 border-black p-2">{sensor._id}</td>
+                          <td className="border-r-2 border-black p-2">{sensor.title}</td>
+                          <td className="border-r-2 border-black p-2">{sensor.unit}</td>
+                          <td className="border-r-2 border-black p-2">{sensor.sensorType}</td>
                         </tr>
-                      ))} */}
+                      ))}
                     </tbody>
                   </table>
               </div>

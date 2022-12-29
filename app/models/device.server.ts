@@ -22,7 +22,18 @@ export type Device = {
 };
 
 export async function deleteDevice (deviceId: string, token: string) {
-
+  const res = await fetch(
+    `${process.env.OSEM_API_URL}/management/boxes/delete`,
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json;charset=UTF-8",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({boxIds: [deviceId]})
+    }
+  );
+  return await res.json();
 }
 
 export async function updateDevice(deviceId: string, values: any, token: string) {
