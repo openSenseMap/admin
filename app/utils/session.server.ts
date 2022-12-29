@@ -1,12 +1,15 @@
 import invariant from "tiny-invariant";
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
+import { z } from "zod";
 
 invariant(process.env.SESSION_SECRET, "SESSION_SECRET must be set");
 
-type LoginForm = {
-  username: string;
-  password: string;
-};
+export const LoginSchema = z.object({
+  email: z.string().email(),
+  password: z.string(),
+});
+
+export type LoginForm = z.infer<typeof LoginSchema>;
 
 const validateJWT = function validateJWT (jwt: string) {
   if (!jwt) {
@@ -27,7 +30,7 @@ const validateJWT = function validateJWT (jwt: string) {
   }
 }
 
-export async function login({ username, password }: LoginForm) {
+export async function login({ email, password }: LoginForm) {
   const response = await fetch(
     `${process.env.OSEM_API_URL}/users/sign-in`,
     {
@@ -36,7 +39,7 @@ export async function login({ username, password }: LoginForm) {
         "content-type": "application/json;charset=UTF-8",
       },
       body: JSON.stringify({
-        email: username,
+        email: email,
         password: password,
       }),
     }
@@ -45,6 +48,10 @@ export async function login({ username, password }: LoginForm) {
 
   if (!user) {
     return null;
+  }
+
+  if (!user.data) {
+    throw new Error(user.message)
   }
 
   if (validateJWT(user.token) !== true) {
